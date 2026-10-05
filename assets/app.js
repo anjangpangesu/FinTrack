@@ -112,6 +112,35 @@ const app = {
         }
     },
 
+    logout() {
+        this.showConfirm('Yakin ingin keluar dari akun?', () => {
+            sessionStorage.removeItem('fintrack_logged_in');
+            document.getElementById('login-password').value = '';
+            document.getElementById('login-overlay').classList.remove('hidden');
+            this.showToast('Berhasil keluar');
+            
+            // Clear local data
+            this.state.data = { pemasukan: [], pengeluaran: [], hutang: [] };
+            this.renderRingkasan();
+            this.renderList('pemasukan');
+            this.renderList('pengeluaran');
+            this.renderList('hutang');
+        });
+    },
+
+    togglePasswordVisibility() {
+        const passwordInput = document.getElementById('login-password');
+        const toggleIcon = document.getElementById('toggle-password-icon');
+        
+        if (passwordInput.type === 'password') {
+            passwordInput.type = 'text';
+            toggleIcon.classList.replace('fa-eye', 'fa-eye-slash');
+        } else {
+            passwordInput.type = 'password';
+            toggleIcon.classList.replace('fa-eye-slash', 'fa-eye');
+        }
+    },
+
     initCustomSelect(selectId) {
         const select = document.getElementById(selectId);
         if (!select || select.dataset.customized) return;
