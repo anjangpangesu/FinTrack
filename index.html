@@ -46,8 +46,8 @@
                 <div class="mb-6">
                     <label class="block text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">Password</label>
                     <div class="relative">
-                        <input type="password" id="login-password" required class="w-full bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 pr-12 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors" placeholder="••••••••">
-                        <button type="button" onclick="app.togglePasswordVisibility()" class="absolute inset-y-0 right-0 px-4 flex items-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors focus:outline-none">
+                        <input type="password" id="login-password" required class="w-full bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 pr-12 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors relative z-0" placeholder="••••••••">
+                        <button type="button" onclick="app.togglePasswordVisibility()" class="absolute inset-y-0 right-0 px-4 flex items-center text-zinc-400 hover:text-zinc-700 dark:hover:text-zinc-300 transition-colors focus:outline-none z-10 cursor-pointer">
                             <i id="toggle-password-icon" class="fas fa-eye"></i>
                         </button>
                     </div>
