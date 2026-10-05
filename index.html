@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinTrack - Website Manajemen Keuangan Pribadi</title>
+    <!-- Favicon -->
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='-32 -32 576 576'><path fill='%2318181b' stroke='%23ffffff' stroke-width='32' d='M64 32C28.7 32 0 60.7 0 96V416c0 35.3 28.7 64 64 64H448c35.3 0 64-28.7 64-64V192c0-35.3-28.7-64-64-64H80c-8.8 0-16-7.2-16-16s7.2-16 16-16H448c17.7 0 32-14.3 32-32s-14.3-32-32-32H64zM416 272a32 32 0 1 1 0 64 32 32 0 1 1 0-64z'/></svg>">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+        }
+    </script>
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="bg-[#FAFAFA] dark:bg-zinc-950 text-zinc-900 dark:text-zinc-100 font-sans pb-20 md:pb-0 min-h-screen selection:bg-zinc-900 selection:text-white dark:selection:bg-white dark:selection:text-zinc-900 transition-colors duration-300">
+    
+    <!-- Login Overlay -->
+    <div id="login-overlay" class="fixed inset-0 z-[200] bg-[#FAFAFA] dark:bg-zinc-950 flex justify-center items-center p-4 transition-opacity duration-300">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border-2 border-zinc-200 dark:border-zinc-800 w-full max-w-sm overflow-hidden text-center p-8 animate-fade-in">
+            <div class="flex justify-center mb-6">
+                <div class="w-16 h-16 bg-zinc-900 dark:bg-white rounded-full flex justify-center items-center text-3xl text-white dark:text-zinc-900 shadow-sm">
+                    <i class="fas fa-lock"></i>
+                </div>
+            </div>
+            <h2 class="text-2xl font-black text-zinc-900 dark:text-zinc-100 mb-2 tracking-tight">Login</h2>
+            <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-8 font-medium">Masuk untuk mengakses FinTrack</p>
+            
+            <form id="login-form" onsubmit="app.submitLogin(event)" class="space-y-4 text-left">
+                <div>
+                    <label class="block text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">Username</label>
+                    <input type="text" id="login-username" required class="w-full bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors" placeholder="Username">
+                </div>
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">Password</label>
+                    <input type="password" id="login-password" required class="w-full bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors" placeholder="••••••••">
+                </div>
+                <button type="submit" id="btn-login" class="w-full px-6 py-3.5 rounded-xl text-white dark:text-zinc-900 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 font-bold flex justify-center items-center transition-all active:scale-95 shadow-sm">
+                    <span id="btn-login-text">Masuk</span>
+                    <i id="btn-login-spinner" class="fas fa-circle-notch fa-spin hidden ml-2"></i>
+                </button>
+            </form>
+            
+            <div class="mt-6 flex justify-center space-x-4">
+                <button onclick="app.openSettingsModal()" class="text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition"><i class="fas fa-cog mr-1"></i>Pengaturan URL</button>
+                <button onclick="app.toggleDarkMode()" class="text-xs font-semibold text-zinc-500 hover:text-zinc-900 dark:hover:text-zinc-100 transition"><i class="fas fa-moon mr-1"></i>Mode Tema</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navbar (Desktop & Tablet) -->
+    <nav class="bg-zinc-950 dark:bg-black text-white sticky top-0 z-40 border-b border-zinc-800/50 backdrop-blur-md transition-colors duration-300">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center space-x-2">
+                    <i class="fas fa-wallet text-2xl"></i>
+                    <span class="font-bold text-xl tracking-tight">FinTrack</span>
+                </div>
+                <div class="hidden md:block">
+                    <div class="ml-10 flex items-baseline space-x-2">
+                        <button onclick="app.switchTab('ringkasan')" class="tab-link px-4 py-2 rounded-lg font-medium hover:bg-zinc-800 transition-all duration-200" data-target="ringkasan">
+                            <i class="fas fa-chart-line mr-2"></i>Ringkasan
+                        </button>
+                        <button onclick="app.switchTab('pemasukan')" class="tab-link px-4 py-2 rounded-lg font-medium hover:bg-zinc-800 transition-all duration-200" data-target="pemasukan">
+                            <i class="fas fa-wallet mr-2"></i>Pemasukan
+                        </button>
+                        <button onclick="app.switchTab('pengeluaran')" class="tab-link px-4 py-2 rounded-lg font-medium hover:bg-zinc-800 transition-all duration-200" data-target="pengeluaran">
+                            <i class="fas fa-shopping-cart mr-2"></i>Pengeluaran
+                        </button>
+                        <button onclick="app.switchTab('hutang')" class="tab-link px-4 py-2 rounded-lg font-medium hover:bg-zinc-800 transition-all duration-200" data-target="hutang">
+                            <i class="fas fa-hand-holding-usd mr-2"></i>Hutang
+                        </button>
+                    </div>
+                </div>
+                <div class="flex items-center space-x-2 md:space-x-4">
+                    <button onclick="app.toggleDarkMode()" class="text-white hover:text-zinc-300 transition" title="Toggle Mode Terang/Gelap">
+                        <i id="dark-mode-icon" class="fas fa-moon text-xl"></i>
+                    </button>
+                    <button onclick="app.openSettingsModal()" class="text-white hover:text-zinc-300 transition" title="Pengaturan">
+                        <i class="fas fa-cog text-xl"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 mb-6">
+        
+        <!-- Tab: Ringkasan -->
+        <section id="tab-ringkasan" class="tab-content hidden animate-fade-in">
+            <div class="flex flex-col items-center justify-center mb-8 space-y-4">
+                <h2 class="text-3xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100 uppercase">Ringkasan</h2>
+                <div class="flex items-center space-x-4 bg-white dark:bg-zinc-900 rounded-full border-2 border-zinc-200 dark:border-zinc-800 p-1.5 shadow-sm">
+                    <button onclick="app.navigateMonth(-1)" class="p-2 w-10 h-10 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center justify-center text-zinc-600 dark:text-zinc-300"><i class="fas fa-chevron-left"></i></button>
+                    <input type="month" id="month-ringkasan" class="appearance-none bg-transparent font-bold text-zinc-900 dark:text-zinc-100 focus:outline-none text-center cursor-pointer" style="min-width: 140px;">
+                    <button onclick="app.navigateMonth(1)" class="p-2 w-10 h-10 rounded-full hover:bg-zinc-100 dark:hover:bg-zinc-800 transition flex items-center justify-center text-zinc-600 dark:text-zinc-300"><i class="fas fa-chevron-right"></i></button>
+                </div>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Total Saldo Terkini (All-Time) -->
+                <div class="bg-zinc-900 dark:bg-white rounded-2xl shadow-[4px_4px_0px_0px_rgba(24,24,27,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] border-2 border-zinc-900 dark:border-white p-6 text-white dark:text-zinc-900 flex flex-col justify-center items-center text-center transform transition hover:-translate-y-1">
+                    <h3 class="text-sm font-bold uppercase tracking-widest mb-2 opacity-80">Saldo Terkini</h3>
+                    <h4 class="font-black text-3xl md:text-4xl tracking-tight" id="ringkasan-saldo">Rp 0</h4>
+                    <p class="text-xs mt-3 opacity-70">Total dari seluruh waktu</p>
+                </div>
+                <!-- Pemasukan Bulanan -->
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-[4px_4px_0px_0px_rgba(24,24,27,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] border-2 border-zinc-900 dark:border-zinc-700 p-6 flex flex-col justify-center items-center text-center transform transition hover:-translate-y-1">
+                    <h3 class="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2" id="label-ringkasan-pemasukan">Pemasukan</h3>
+                    <h4 class="font-black text-3xl md:text-4xl tracking-tight text-zinc-900 dark:text-zinc-100" id="ringkasan-pemasukan">Rp 0</h4>
+                    <span class="mt-3 text-[11px] font-bold px-3 py-1 rounded-full bg-zinc-900 text-white border border-zinc-900 dark:bg-white dark:text-zinc-900 dark:border-white shadow-sm flex items-center"><i class="fas fa-arrow-down mr-1.5"></i>In</span>
+                </div>
+                <!-- Pengeluaran Bulanan -->
+                <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-[4px_4px_0px_0px_rgba(24,24,27,1)] dark:shadow-[4px_4px_0px_0px_rgba(255,255,255,0.2)] border-2 border-zinc-900 dark:border-zinc-700 p-6 flex flex-col justify-center items-center text-center transform transition hover:-translate-y-1">
+                    <h3 class="text-sm font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest mb-2" id="label-ringkasan-pengeluaran">Pengeluaran</h3>
+                    <h4 class="font-black text-3xl md:text-4xl tracking-tight text-zinc-900 dark:text-zinc-100" id="ringkasan-pengeluaran">Rp 0</h4>
+                    <span class="mt-3 text-[11px] font-bold px-3 py-1 rounded-full bg-zinc-900 text-white border border-zinc-900 dark:bg-white dark:text-zinc-900 dark:border-white shadow-sm flex items-center"><i class="fas fa-arrow-up mr-1.5"></i>Out</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- Tab: Pemasukan -->
+        <section id="tab-pemasukan" class="tab-content hidden animate-fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
+                <h2 class="text-3xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100 uppercase">Pemasukan</h2>
+                <div class="flex space-x-4 w-full md:w-auto">
+                    <input type="month" id="month-pemasukan" class="appearance-none bg-white border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-900 shadow-sm focus:outline-none focus:border-zinc-900 focus:ring-0 transition-colors cursor-pointer flex-1 md:flex-none">
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl border-2 border-zinc-200 dark:border-zinc-800 p-6 mb-6 shadow-sm hover:shadow-md transition-all">
+                <h3 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">Grafik Pemasukan Bulan Ini</h3>
+                <div class="relative h-64 w-full">
+                    <canvas id="chart-pemasukan"></canvas>
+                </div>
+            </div>
+
+            <!-- Filter & List -->
+            <div class="flex justify-between items-center mb-5">
+                <div class="w-full md:w-64" id="wrapper-pemasukan">
+                    <select id="filter-cat-pemasukan" class="w-full bg-white border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-900 shadow-sm outline-none focus:border-zinc-900 transition-colors cursor-pointer">
+                        <option value="">Semua Kategori</option>
+                        <option value="Gaji">Gaji</option>
+                        <option value="Tabungan">Tabungan</option>
+                        <option value="Keuntungan Bisnis">Keuntungan Bisnis</option>
+                        <option value="Pembayaran Hutang">Pembayaran Hutang</option>
+                        <option value="Uang Lainnya">Uang Lainnya</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="list-pemasukan" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Data cards will be injected here -->
+            </div>
+        </section>
+
+        <!-- Tab: Pengeluaran -->
+        <section id="tab-pengeluaran" class="tab-content hidden animate-fade-in">
+            <div class="flex flex-col md:flex-row justify-between items-start md:items-center mb-6 space-y-4 md:space-y-0">
+                <h2 class="text-3xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100 uppercase">Pengeluaran</h2>
+                <div class="flex space-x-4 w-full md:w-auto">
+                    <input type="month" id="month-pengeluaran" class="appearance-none bg-white border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-900 shadow-sm focus:outline-none focus:border-zinc-900 focus:ring-0 transition-colors cursor-pointer flex-1 md:flex-none">
+                </div>
+            </div>
+
+            <!-- Chart Section -->
+            <div class="bg-white dark:bg-zinc-900 rounded-2xl border-2 border-zinc-200 dark:border-zinc-800 p-6 mb-6 shadow-sm hover:shadow-md transition-all">
+                <h3 class="text-sm font-semibold text-zinc-500 dark:text-zinc-400 mb-2 uppercase tracking-wider">Grafik Pengeluaran Bulan Ini</h3>
+                <div class="relative h-64 w-full">
+                    <canvas id="chart-pengeluaran"></canvas>
+                </div>
+            </div>
+
+            <!-- Filter & List -->
+            <div class="flex justify-between items-center mb-5">
+                <div class="w-full md:w-64" id="wrapper-pengeluaran">
+                    <select id="filter-cat-pengeluaran" class="w-full bg-white border-2 border-zinc-200 rounded-xl px-4 py-2.5 text-sm font-semibold text-zinc-900 shadow-sm outline-none focus:border-zinc-900 transition-colors cursor-pointer">
+                        <option value="">Semua Kategori</option>
+                        <option value="Makanan">Makanan</option>
+                        <option value="Minuman">Minuman</option>
+                        <option value="Peminjaman Duit (Hutang)">Peminjaman Duit (Hutang)</option>
+                        <option value="Paket Data">Paket Data</option>
+                        <option value="Pulsa">Pulsa</option>
+                        <option value="Pangkas Rambut">Pangkas Rambut</option>
+                        <option value="Bensin">Bensin</option>
+                        <option value="Online Shop">Online Shop</option>
+                        <option value="Peliharaan">Peliharaan</option>
+                        <option value="Cuci Kendaraan (Steam)">Cuci Kendaraan (Steam)</option>
+                        <option value="Langganan Aplikasi">Langganan Aplikasi</option>
+                        <option value="Top Up Game">Top Up Game</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div id="list-pengeluaran" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Data cards will be injected here -->
+            </div>
+        </section>
+
+        <!-- Tab: Hutang -->
+        <section id="tab-hutang" class="tab-content hidden animate-fade-in">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-3xl font-black tracking-tighter text-zinc-900 dark:text-zinc-100 uppercase">Manajemen Hutang</h2>
+            </div>
+            
+            <div id="list-hutang" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                <!-- Data cards will be injected here -->
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Floating Action Button -->
+    <button onclick="app.openAddModal()" class="fixed bottom-24 md:bottom-8 right-4 md:right-8 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 text-white dark:text-zinc-900 rounded-full h-16 w-16 shadow-xl flex items-center justify-center transition-all transform hover:scale-105 active:scale-95 z-30">
+        <i class="fas fa-plus text-2xl"></i>
+    </button>
+
+    <!-- Mobile Bottom Navigation -->
+    <div class="md:hidden fixed bottom-0 w-full bg-white/95 dark:bg-zinc-950/95 backdrop-blur-lg border-t border-zinc-200 dark:border-zinc-800 z-40 flex justify-around p-2 pb-safe transition-colors duration-300">
+        <button onclick="app.switchTab('ringkasan')" class="tab-link-mob flex flex-col items-center w-full py-2 text-zinc-400 hover:text-zinc-900 transition-all" data-target="ringkasan">
+            <i class="fas fa-chart-line text-xl mb-1"></i>
+            <span class="text-[10px] font-bold tracking-wide">Ringkasan</span>
+        </button>
+        <button onclick="app.switchTab('pemasukan')" class="tab-link-mob flex flex-col items-center w-full py-2 text-zinc-400 hover:text-zinc-900 transition-all" data-target="pemasukan">
+            <i class="fas fa-wallet text-xl mb-1"></i>
+            <span class="text-[10px] font-bold tracking-wide">Pemasukan</span>
+        </button>
+        <button onclick="app.switchTab('pengeluaran')" class="tab-link-mob flex flex-col items-center w-full py-2 text-zinc-400 hover:text-zinc-900 transition-all" data-target="pengeluaran">
+            <i class="fas fa-shopping-cart text-xl mb-1"></i>
+            <span class="text-[10px] font-bold tracking-wide">Pengeluaran</span>
+        </button>
+        <button onclick="app.switchTab('hutang')" class="tab-link-mob flex flex-col items-center w-full py-2 text-zinc-400 hover:text-zinc-900 transition-all" data-target="hutang">
+            <i class="fas fa-hand-holding-usd text-xl mb-1"></i>
+            <span class="text-[10px] font-bold tracking-wide">Hutang</span>
+        </button>
+    </div>
+
+    <!-- Modals -->
+
+    <!-- Modal: Form Pemasukan / Pengeluaran / Hutang -->
+    <div id="modal-form" class="hidden fixed inset-0 bg-zinc-900/50 dark:bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-opacity duration-300">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border-2 border-zinc-200 dark:border-zinc-800 w-full max-w-md max-h-[90vh] flex flex-col overflow-hidden animate-slide-up">
+            <div class="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-white dark:bg-zinc-900">
+                <h3 class="text-xl font-black tracking-tight text-zinc-900 dark:text-zinc-100" id="modal-title">Tambah Data</h3>
+                <button onclick="app.closeModal('modal-form')" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6 overflow-y-auto flex-1">
+                <form id="data-form" onsubmit="app.submitForm(event)">
+                    <input type="hidden" id="form-id">
+                    <input type="hidden" id="form-type">
+                    
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">Tanggal</label>
+                        <input type="date" id="form-tanggal" required class="w-full bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors cursor-pointer">
+                    </div>
+
+                    <div class="mb-4" id="field-kategori">
+                        <label class="block text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">Kategori</label>
+                        <select id="form-kategori" class="w-full bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 outline-none focus:border-zinc-900 dark:focus:border-white transition-colors cursor-pointer">
+                            <!-- Options injected by JS -->
+                        </select>
+                    </div>
+                    
+                    <div class="mb-4 hidden" id="field-pihak">
+                        <label class="block text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">Nama Pihak (Orang/Instansi)</label>
+                        <input type="text" id="form-pihak" class="w-full bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors" placeholder="Contoh: Budi">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">Nominal (Rp)</label>
+                        <input type="number" id="form-nominal" required min="0" class="w-full bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors" placeholder="0">
+                    </div>
+
+                    <div class="mb-4">
+                        <label class="block text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">Keterangan</label>
+                        <textarea id="form-keterangan" rows="2" class="w-full bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors" placeholder="Opsional"></textarea>
+                    </div>
+
+                    <div class="mb-4 hidden" id="field-bukti">
+                        <label class="block text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">Bukti Struk/Transfer (Max 2MB)</label>
+                        <input type="file" id="form-bukti" accept=".pdf,image/png,image/jpeg,image/jpg" class="w-full text-sm text-zinc-500 dark:text-zinc-400 file:mr-4 file:py-2.5 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-bold file:bg-zinc-100 dark:file:bg-zinc-800 file:text-zinc-900 dark:file:text-white hover:file:bg-zinc-200 dark:hover:file:bg-zinc-700 transition-colors cursor-pointer">
+                        <div id="form-bukti-info" class="text-xs text-zinc-500 mt-2 truncate font-medium"></div>
+                    </div>
+                    
+                    <div class="pt-4 flex justify-end space-x-3 border-t border-zinc-100 dark:border-zinc-800 mt-6">
+                        <button type="button" onclick="app.closeModal('modal-form')" class="px-5 py-2.5 rounded-full text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 font-bold transition">Batal</button>
+                        <button type="submit" id="btn-submit" class="px-6 py-2.5 rounded-full text-white dark:text-zinc-900 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 font-bold flex items-center transition-all active:scale-95">
+                            <span id="btn-submit-text">Simpan</span>
+                            <i id="btn-submit-spinner" class="fas fa-circle-notch fa-spin hidden ml-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Bayar Hutang -->
+    <div id="modal-bayar" class="hidden fixed inset-0 bg-zinc-900/50 dark:bg-black/80 backdrop-blur-sm flex justify-center items-center z-50 p-4 transition-opacity duration-300">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border-2 border-zinc-200 dark:border-zinc-800 w-full max-w-sm overflow-hidden animate-slide-up">
+            <div class="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-white dark:bg-zinc-900">
+                <h3 class="text-xl font-black tracking-tight text-zinc-900 dark:text-zinc-100">Bayar Hutang</h3>
+                <button onclick="app.closeModal('modal-bayar')" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <form id="bayar-form" onsubmit="app.submitBayar(event)">
+                    <input type="hidden" id="bayar-id">
+                    
+                    <div class="mb-4">
+                        <p class="text-sm text-zinc-500 dark:text-zinc-400 mb-2">Sisa Hutang: <span id="bayar-sisa" class="font-bold text-zinc-900 dark:text-zinc-100">Rp 0</span></p>
+                        <label class="block text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">Nominal Pembayaran (Rp)</label>
+                        <input type="number" id="bayar-nominal" required min="1" class="w-full bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors" placeholder="0">
+                    </div>
+                    
+                    <div class="pt-2 flex justify-end space-x-3">
+                        <button type="button" onclick="app.closeModal('modal-bayar')" class="px-5 py-2.5 rounded-full text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 font-bold transition">Batal</button>
+                        <button type="submit" id="btn-bayar" class="px-6 py-2.5 rounded-full text-white dark:text-zinc-900 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 font-bold flex items-center transition-all active:scale-95">
+                            <span id="btn-bayar-text">Bayar</span>
+                            <i id="btn-bayar-spinner" class="fas fa-circle-notch fa-spin hidden ml-2"></i>
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Confirmation Modal -->
+    <div id="modal-confirm" class="hidden fixed inset-0 bg-zinc-900/50 dark:bg-black/80 backdrop-blur-sm flex justify-center items-center z-[120] p-4 transition-opacity duration-300">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border-2 border-zinc-200 dark:border-zinc-800 w-full max-w-sm overflow-hidden animate-slide-up text-center p-6">
+            <div class="w-16 h-16 bg-rose-100 dark:bg-rose-900/30 text-rose-500 rounded-full flex items-center justify-center text-3xl mx-auto mb-4">
+                <i class="fas fa-exclamation-triangle"></i>
+            </div>
+            <h3 class="text-xl font-black text-zinc-900 dark:text-zinc-100 mb-2" id="confirm-title">Konfirmasi</h3>
+            <p class="text-sm text-zinc-600 dark:text-zinc-400 mb-6" id="confirm-message">Apakah Anda yakin?</p>
+            <div class="flex space-x-3">
+                <button id="btn-confirm-cancel" class="flex-1 bg-zinc-100 dark:bg-zinc-800 text-zinc-900 dark:text-zinc-100 font-bold py-3 rounded-xl hover:bg-zinc-200 dark:hover:bg-zinc-700 transition-colors">Batal</button>
+                <button id="btn-confirm-ok" class="flex-1 bg-rose-500 text-white font-bold py-3 rounded-xl hover:bg-rose-600 transition-colors shadow-sm">Ya, Lanjutkan</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal: Settings -->
+    <div id="modal-settings" class="hidden fixed inset-0 bg-zinc-900/50 dark:bg-black/80 backdrop-blur-sm flex justify-center items-center z-[60] p-4 transition-opacity duration-300">
+        <div class="bg-white dark:bg-zinc-900 rounded-2xl shadow-2xl border-2 border-zinc-200 dark:border-zinc-800 w-full max-w-lg overflow-hidden animate-slide-up">
+            <div class="px-6 py-5 border-b border-zinc-100 dark:border-zinc-800 flex justify-between items-center bg-white dark:bg-zinc-900">
+                <h3 class="text-xl font-black tracking-tight text-zinc-900 dark:text-zinc-100"><i class="fas fa-cogs mr-2"></i>Pengaturan</h3>
+                <button onclick="app.closeModal('modal-settings')" class="text-zinc-400 hover:text-zinc-900 dark:hover:text-white transition"><i class="fas fa-times text-xl"></i></button>
+            </div>
+            <div class="p-6">
+                <div class="mb-6">
+                    <label class="block text-sm font-bold text-zinc-900 dark:text-zinc-100 mb-1.5">URL Google Apps Script Web App</label>
+                    <p class="text-xs text-zinc-500 dark:text-zinc-400 mb-3">Paste URL dari deployment Apps Script disini agar aplikasi dapat terhubung dengan Spreadsheet.</p>
+                    <input type="url" id="setting-app-url" class="w-full bg-zinc-50 dark:bg-zinc-950 border-2 border-zinc-200 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm font-medium text-zinc-900 dark:text-zinc-100 focus:outline-none focus:border-zinc-900 dark:focus:border-white transition-colors" placeholder="https://script.google.com/macros/s/AKfycb...">
+                </div>
+                
+                <div class="flex justify-end space-x-3 mt-4">
+                    <button type="button" onclick="app.closeModal('modal-settings')" class="px-5 py-2.5 rounded-full text-zinc-700 dark:text-zinc-300 bg-zinc-100 dark:bg-zinc-800 hover:bg-zinc-200 dark:hover:bg-zinc-700 font-bold transition">Batal</button>
+                    <button type="button" onclick="app.saveSettings()" class="px-6 py-2.5 rounded-full text-white dark:text-zinc-900 bg-zinc-900 dark:bg-white hover:bg-zinc-800 dark:hover:bg-zinc-200 font-bold transition-all active:scale-95">Simpan Pengaturan</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div id="global-loading" class="fixed inset-0 bg-slate-900 bg-opacity-70 flex flex-col justify-center items-center z-[100] transition-opacity duration-300">
+        <div class="bg-white p-5 rounded-2xl shadow-2xl flex flex-col items-center">
+            <i class="fas fa-circle-notch fa-spin text-indigo-600 text-4xl mb-3"></i>
+            <p class="text-slate-700 font-medium" id="loading-text">Memuat Data...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast" class="fixed top-4 right-4 z-[110] transform transition-all duration-300 translate-y-[-150%] opacity-0 bg-white border-l-4 border-emerald-500 shadow-lg rounded p-4 flex items-center max-w-xs w-full pointer-events-none">
+        <i id="toast-icon" class="fas fa-check-circle text-emerald-500 text-xl mr-3"></i>
+        <div>
+            <h4 id="toast-title" class="font-bold text-slate-800 text-sm">Berhasil</h4>
+            <p id="toast-msg" class="text-xs text-slate-600 mt-1">Operasi berhasil dilakukan.</p>
+        </div>
+    </div>
+
+    <script src="assets/app.js"></script>
+</body>
+</html>

@@ -1,0 +1,88 @@
+/* assets/style.css */
+
+/* Custom Animations */
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-in-out;
+}
+
+@keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+.animate-slide-up {
+    animation: slideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Hide scrollbar for cleaner UI */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: transparent;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Safe area for mobile bottom nav on iOS devices */
+.pb-safe {
+    padding-bottom: env(safe-area-inset-bottom);
+}
+
+/* Active Tab Styles */
+.tab-link.active {
+    background-color: #27272a; /* zinc-800 */
+    color: white;
+}
+.tab-link-mob.active[data-target="pemasukan"],
+.tab-link-mob.active[data-target="pengeluaran"],
+.tab-link-mob.active[data-target="hutang"] {
+    color: #18181b; /* zinc-900 */
+}
+.tab-link-mob.active i {
+    transform: scale(1.15) translateY(-2px);
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.tab-link-mob i {
+    transition: transform 0.3s ease;
+}
+
+/* Card Hover effects */
+.data-card {
+    transition: all 0.2s ease-out;
+}
+.data-card:hover {
+    transform: translateY(-2px);
+    border-color: #d4d4d8; /* zinc-300 */
+    box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+}
+
+/* Invert calendar icon for date and month inputs in dark mode */
+.dark input[type="date"]::-webkit-calendar-picker-indicator,
+.dark input[type="month"]::-webkit-calendar-picker-indicator {
+    filter: invert(1);
+    opacity: 0.8;
+}
+.dark input[type="date"]::-webkit-calendar-picker-indicator:hover,
+.dark input[type="month"]::-webkit-calendar-picker-indicator:hover {
+    opacity: 1;
+}
+
+/* Remove up/down arrows from number inputs */
+input[type="number"]::-webkit-inner-spin-button, 
+input[type="number"]::-webkit-outer-spin-button { 
+  -webkit-appearance: none; 
+  margin: 0; 
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+}
