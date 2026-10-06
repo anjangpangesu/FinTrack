@@ -566,6 +566,8 @@ const app = {
         Chart.defaults.color = isDark ? '#a1a1aa' : '#52525b';
         Chart.defaults.borderColor = isDark ? '#27272a' : '#f4f4f5';
 
+        const isMobile = window.innerWidth < 768;
+
         this.state.charts[type] = new Chart(ctx, {
             type: 'bar',
             data: {
@@ -575,13 +577,15 @@ const app = {
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                categoryPercentage: isMobile ? 0.85 : 0.75,
+                barPercentage: isMobile ? 0.95 : 0.85,
                 scales: {
                     x: {
-                        stacked: false,
+                        stacked: true,
                         grid: { display: false }
                     },
                     y: {
-                        stacked: false,
+                        stacked: true,
                         border: { display: false },
                         ticks: {
                             callback: function(value) {
